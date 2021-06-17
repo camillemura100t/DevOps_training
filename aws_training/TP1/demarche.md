@@ -1,3 +1,5 @@
+©Vanessa Kovalsky - https://github.com/vanessakovalsky
+
 # Détail des actions
 
 # Pour le VPC création de l'ensemble des éléments réseau nécessaire : 

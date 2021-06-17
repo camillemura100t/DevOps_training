@@ -1,3 +1,5 @@
+©Vanessa Kovalsky - https://github.com/vanessakovalsky
+
 # TP 1 - Automatisation de l'installation d'un site web sur AWS
 
 L'objectif de ce TP est de créer un script qui va installer une application web en PHP / SQL sur AWS dans l'infrastructure suivante : 
