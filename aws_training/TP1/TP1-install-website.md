@@ -1,5 +1,8 @@
 ©Vanessa Kovalsky - https://github.com/vanessakovalsky
 
+https://docs.aws.amazon.com/fr_fr/AWSCloudFormation/latest/UserGuide/working-with-templates-cfn-designer-walkthrough-createbasicwebserver.html#working-with-templates-cfn-designer-walkthrough-createbasicwebserver-addresources
+https://docs.aws.amazon.com/cli/latest/reference/cloudformation/get-template.html
+
 # TP 1 - Automatisation de l'installation d'un site web sur AWS
 
 L'objectif de ce TP est de créer un script qui va installer une application web en PHP / SQL sur AWS dans l'infrastructure suivante : 
