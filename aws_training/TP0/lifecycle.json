@@ -1,0 +1,13 @@
+{
+    "Rules": [
+        {
+            "Filter": {
+            },
+            "Status": "Enabled",
+            "Expiration": {
+                "Days": 7
+            },
+            "ID": "lctestcli"
+        }
+    ]
+}

@@ -1,0 +1,48 @@
+-
+  name: Apache_deploy
+  hosts: all    # cible tous les hosts de l'inventory
+  become: yes
+
+  vars:   # déclaration de variables
+    users: ['porthos', 'athos', 'aramis']   # autre solution pour déclarer la liste ci-dessous
+    # - porthos
+    # - athos
+    # - aramis
+    group: musketeers
+
+  tasks:
+    - name: Install_apache_et_php
+      apt: name={{item}} state=latest   # si loop, il faut une variable d'itération (pour boucle) item
+      loop: ['apache2', 'php', 'libapache2-mod-php', 'php-mysql']   # tableau / liste
+    
+    - name: Start_apache
+      service: name=apache2 state=started   # state=reloaded
+
+    - name: Create_group_musketeers
+      group: name={{group}} state=present
+
+    - name: Create_user
+      user: name={{item}} state=present groups={{group}}
+      loop: "{{users}}"   # jinja - appelle la var users
+
+    - name: Create_user_folder_in_apache_document_root
+      file: path=/var/www/html/{{item}} state=directory
+      loop: "{{users}}"
+
+    - name: Copy_php_files
+      tags: copy_php_files
+      copy: src=./files/index.php dest=/var/www/html/{{item}} owner={{item}}
+      loop: "{{users}}"
+
+-
+  name: Install_docker_et_container
+  tags: dock_cont
+  hosts: all
+  become: yes
+  roles:    # permet de segmenter un playbook. need subfolders roles / <role_name> / tasks + fichier main.yml
+    - docker
+    - container
+  # tasks:
+  #   - name: Create_mariaDB_container_sh   # alternative au role container pour faire des tests
+  #     tags: mariadb_sh
+  #     shell: docker run -d --name mariadb -p 3306:3306 -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=ansible mariadb

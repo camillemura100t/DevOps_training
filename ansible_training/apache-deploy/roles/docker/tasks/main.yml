@@ -1,0 +1,29 @@
+- name: Install_system_packages
+  apt:
+    name: "{{item}}"
+    state: latest
+    update_cache: yes
+  loop: ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg', 'lsb-release']
+
+- name: Add_docker_GPG
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add_docker_repo
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable    # bionic => ubuntu 18.04
+    state: present
+
+- name: Install_docker_CE   # CE = community edition
+  apt:
+    name: docker-ce
+    state: latest
+    update_cache: yes
+
+- name: Add_vagrant_user_to_docker_group
+  tags: user2docker
+  user:
+    name: vagrant
+    group: docker
+

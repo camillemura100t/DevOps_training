@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+    test-my-redis:
+        image: redis:5-alpine
+        ports:
+            - 6379:6379
+
+    test-my-apache:
+        image: httpd:2.4-alpine
+        ports:
+            - 8080:80
+
+# deploy container js simpleweb and map port 3000 => 3000
+
+    test-my-simpleweb:
+        build:
+            dockerfile: Dockerfile
+            context: .
+        ports:
+            - 3000:3000

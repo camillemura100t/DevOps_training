@@ -1,0 +1,49 @@
+-
+  name: TestPlaybook
+  hosts: group1
+  #become: yes    # sous-entendu become root : toutes les commandes du playbook seront exec en root
+
+  tasks:
+    - name: TestPing
+      ping:    # module ping
+
+    - name: Touch
+      # become: yes    # sous-entendu become root : cette task sera exec en root
+      command: "touch /tmp/touch_test"
+
+    - name: Echo_example
+      command: "echo Coucou depuis Ansible"
+      register: cmd_out    # enregistre le détail / les informations de la cmd pour le debug dans une variable (ici : cmd_out)
+
+    # - debug: var=cmd_out   # debug sur une variable précédemment renseignée dans une task
+    # - debug: msg="{{cmd_out.stdout}}"   # {{}} = jinja
+
+    - name: Shell_example
+      shell: "echo Coucou depuis Ansible > /tmp/shell_example"  # redirection > ok en shell mais ko en bash
+
+    - name: Change_file_owner
+      become: yes
+      file:
+        path: /tmp/shell_example
+        owner: "root"
+
+    - name: Command_with_env_var
+      command: touch $DIR/$FILENAME
+      environment:
+        DIR: /tmp
+        FILENAME: cmd_env_example
+
+    - name: Command_with_env_var_2
+      command: touch $FILENAME
+      args:
+        chdir: $DIR
+      environment:
+        DIR: /tmp
+        FILENAME: cmd_env_example_2
+
+    - name: Apt_example_apache
+      tags: toto   # Tag la task pour par exemple l'exécuter en solo avec un ansible-playbook -i targets.txt test-playbook.yml -t toto
+      become: yes
+      apt:
+        name: apache2
+        state: latest

@@ -1,0 +1,22 @@
+version: '3'
+services:
+
+  mysql-app:    # important!!! le nom de service est un dnsname pour les autres app situés dans le network créé par docker-compose
+    image: mysql    # cible une image (si pas de tag => latest)
+    container_name: mysql-app-dk
+    environment:    # variables d'environnement
+      MYSQL_ROOT_PASSWORD: password     # root password pour admindb (penser à sécuriser toussa toussa)
+    volumes:    # gestion volumes
+#      - /var/lib/mysql  # volume anonyme = data conservées lors d'un stop/start mais sont clear si on down le docker-compose
+#      - dbsql_vol1:/var/lib/mysql   # volume nommé (persistent)
+      - ./db_data:/var/lib/mysql  # volume monté pour data sql (persistent puisque dépend du stockage local - penser à la réplication (en dedup si possible) sinon data perdues lors d'une corruption)
+      - ./db_dumps:/tmp/db_dumps    # volume monté pour dumps sql manuels et dumps sql via crontab (sh à créer)
+
+  admin-db:
+    image: phpmyadmin
+    container_name: admin-db-dk
+    ports:  # port mapping
+      - 8080:80
+    environment:
+      MYSQL_ROOT_PASSWORD: password     # root password pour phpmyadmin (penser à sécuriser toussa toussa)
+      PMA_HOST: mysql-app   # define address/host name of the MySQL server = hostname service db mysql)

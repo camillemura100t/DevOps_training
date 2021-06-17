@@ -1,0 +1,36 @@
+version: '3'
+services:
+
+  redis-server: # important!!! le nom de service est un dnsname pour les autres app situés dans le network créé par docker-compose
+    image: 'redis'  # cible une image (si pas de tag => latest)
+    ports:  # port mapping
+      - "6379:6379"
+
+  mysql-app:
+    image: 'mysql:5.7'
+    environment:  # variables d'environnement
+      MYSQL_ROOT_PASSWORD: password
+    volumes:  
+#      - /var/lib/mysql  # volume anonyme = data conservées lors d'un stop/start mais sont clear si on down le docker-compose
+      - dbsql_vol1:/var/lib/mysql   # volume nommé (persistent)
+#      - ./localfolder:/usr/local/tomcat/webapps/test/public  # volume monté (persistent puisque dépend du stockage local)
+
+  admin-db:
+    image: phpmyadmin
+    ports:
+      - 8080:80
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      PMA_HOST: mysql-app
+
+  node-app:
+    build: .  # cible le Dockerfile situé dans le dossier courant
+    depends_on:   # dépendance (requires) à un autre service
+      - mysql-app
+    ports:  # port mapping
+      - "4001:8081"
+    restart: always   # restart automatiquement le service si KO
+
+# section volumes pour options (pour pousser la config volumes)
+volumes:
+  dbsql_vol1:
