@@ -20,14 +20,14 @@ echo 'Creating SG'
 SG_ID=$(aws ec2 create-security-group \
     --group-name SG-CMA-TP \
     --query 'GroupId' \
-    --description "Security group for SSH and HTTP access" \
+    --description "Security group for SSH, HTTP and HTTPS access" \
     --vpc-id $VPC_ID \
     --output text)
 
 # add SG inbound rules
 
 sleep 3
-echo 'Creating inbound SSH/HTTP rules in SG'
+echo 'Creating inbound SSH/HTTP/HTTPS rules in SG'
 aws ec2 authorize-security-group-ingress \
 --group-id $SG_ID \
 --protocol tcp \
@@ -38,6 +38,12 @@ aws ec2 authorize-security-group-ingress \
 --group-id $SG_ID \
 --protocol tcp \
 --port 80 \
+--cidr $MY_PUB_CIDR
+
+aws ec2 authorize-security-group-ingress \
+--group-id $SG_ID \
+--protocol tcp \
+--port 443 \
 --cidr $MY_PUB_CIDR
 
 # create subnet 1 (will be public) inside VPC and store the SN_PUB_ID in variable
@@ -143,7 +149,7 @@ IP_PUB=$(aws ec2 describe-instances \
 --query Reservations[*].Instances[*].{PublicIpAddress:PublicIpAddress} \
 --output text)
 
-# connexion ssh - à améliorer en passant le yes en auto
+# connect ssh - à améliorer en passant le yes en auto
 
 ssh -i "~/.ssh/Tp1KeyPair.pem" ec2-user@$IP_PUB
 
