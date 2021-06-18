@@ -1,23 +1,18 @@
-# get and store the instance's public ip adress
+#!/bin/bash
 
-IP_PUB=$(aws ec2 describe-instances \
---instance-id i-050d488dd8da20546 \
---query Reservations[*].Instances[*].{PublicIpAddress:PublicIpAddress} \
---output text)
+yum update -y
+amazon-linux-extras enable php7.4
+yum install -y httpd
+yum install -y mariadb-server
+yum install -y php-cli php-pdo php-fpm php-json php-mysqlnd
+sudo service mariadb start
+sudo service httpd start
+mysqladmin -u root create blog
 
-# connect ssh - à améliorer en passant le yes en auto
+cd /var/www/html
+sudo wget http://wordpress.org/latest.tar.gz
+sudo tar -xzvf latest.tar.gz
+sudo mv wordpress/* .
+sudo rm -rf wordpress
 
-ssh -i "~/.ssh/Tp1KeyPair.pem" ec2-user@$IP_PUB
-
-# install LAMP - à améliorer en trouvant le moyen de passer les commandes via ssh
-
-sudo yum update -y
-
-sudo amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
-
-sudo yum install -y httpd mariadb-server
-
-sudo systemctl start httpd
-
-sudo systemctl enable httpd
-
+exit

@@ -1,9 +1,12 @@
 #!/bin/bash
 
-# variables
+# variables (on peut en ajouter...)
 
+AWS_REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]')
 VPC_CIDR='10.15.0.0/16'
 MY_PUB_CIDR='77.131.74.214/32'
+SN_PUB_AZ=$AWS_REGION"a"
+SN_PRIV_AZ=$AWS_REGION"b"
 
 # create VPC and store the VPC_ID in variable
 
@@ -52,6 +55,7 @@ echo 'Creating public subnet 10.15.0.0/24 inside VPC'
 SN_PUB_ID=$(aws ec2 create-subnet \
 --vpc-id $VPC_ID \
 --cidr-block 10.15.0.0/24 \
+--availability-zone $SN_PUB_AZ \
 --query 'Subnet.{SubnetId:SubnetId}' \
 --output text)
 
@@ -62,6 +66,7 @@ echo 'Creating private subnet 10.15.1.0/24 inside VPC'
 SN_PRIV_ID=$(aws ec2 create-subnet \
 --vpc-id $VPC_ID \
 --cidr-block 10.15.1.0/24 \
+--availability-zone $SN_PRIV_AZ \
 --query 'Subnet.{SubnetId:SubnetId}' \
 --output text)
 
@@ -138,21 +143,34 @@ INS_ID=$(aws ec2 run-instances \
 --key-name Tp1KeyPair \
 --security-group-ids $SG_ID \
 --subnet-id $SN_PUB_ID \
+--user-data file://deploy_app.sh \
 --query Instances[*].{InstanceId:InstanceId} \
 --output text)
 
+
+## à tester sans query : --user-data file://deploy_app.sh | sudo  jq '.Instances[0].InstanceId' | sed -e 's/^"//' -e 's/"$//'
+
 # get and store the instance's public ip adress
 
-sleep 30
+sleep 15
 IP_PUB=$(aws ec2 describe-instances \
 --instance-id $INS_ID \
 --query Reservations[*].Instances[*].{PublicIpAddress:PublicIpAddress} \
 --output text)
 
-# connect ssh - à améliorer en passant le yes en auto
+# ## ci-dessous : si on veut se connecter en ssh directement :
+# # add elements to handle fingerprint (permet de passer le yes en auto à la première co ssh)
 
-ssh -i "~/.ssh/Tp1KeyPair.pem" ec2-user@$IP_PUB
+# ssh-keygen -R $IP_PUB
+# ssh -o "StrictHostKeyChecking no" $IP_PUB
 
+# # connect ssh avec jeu de clés
+
+# ssh -i "~/.ssh/Tp1KeyPair.pem" ec2-user@$IP_PUB
+
+echo 'Instance ready to be used'
+
+echo 'Next steps => http://'$IP_PUB
 
 
 
