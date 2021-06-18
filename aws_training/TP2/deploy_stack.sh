@@ -1,4 +1,9 @@
 #!/bin/bash
+## before using this script :
+## need aws cli installed on local machine :
+### https://docs.aws.amazon.com/fr_fr/cli/latest/userguide/install-cliv2.html
+## need aws configure :
+### https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
 
 # variables
 
@@ -58,47 +63,80 @@ chmod 400 $PATH_KEY
 echo 'SSH created & ready to be used'
 echo ''
 
-printf "Enter \"create\" to create a new stack\nEnter \"update\" to update an existing stack\nEnter \"delete\" to delete an existing stack\n"
+# ask the user 
+
+printf "Enter \"1\" to create a new stack\nEnter \"2\" to update an existing stack\nEnter \"3\" to delete an existing stack\n"
 
 read CHOICE
 
-if [ $CHOICE = "create" ]
+if [ $CHOICE = "1" ]
     then
         input_stack_parameters
         echo 'Enter the template file name (*.yaml, *.json - must be in you current folder)'
         read STACK_TPL
-        aws cloudformation create-stack \
+        STACK_ID=$(aws cloudformation create-stack \
         --stack-name $STACK_NAME \
         --template-body file://$STACK_TPL \
         --parameters ParameterKey=InstanceType,ParameterValue=$INS_TYPE \
         ParameterKey=ImageId,ParameterValue=$IMG_ID \
         ParameterKey=KeyName,ParameterValue=$KEY_NAME \
         ParameterKey=SSHLocation,ParameterValue=$MY_PUB_CIDR \
-        ParameterKey=BucketName,ParameterValue=$BUCKET_NAME
-        echo 'Creating stack... this may take a few minutes'
+        ParameterKey=BucketName,ParameterValue=$BUCKET_NAME \
+        --output text)
+
+        # STACK_ID_QUERY=$(aws cloudformation describe-stacks \
+        # --stack-name $STACK_NAME
+        # --query Stacks[*].{StackId:StackId}
+        # --output text)
+
+        if [ -z $STACK_ID ]
+            then
+                echo 'Error in stack creation, please verify your entries'
+            else
+                echo 'Creating stack... this may take a few minutes'
+        fi
 fi
 
-if [ $CHOICE = "update" ]
+if [ $CHOICE = "2" ]
     then
         input_stack_parameters
         echo 'Enter the updated template file name (*.yaml, *.json - must be in you current folder)'
         read STACK_TPL_UPD
-        aws cloudformation update-stack \
+        STACK_ID=$(aws cloudformation update-stack \
         --stack-name $STACK_NAME \
         --template-body file://$STACK_TPL_UPD \
         --parameters ParameterKey=InstanceType,ParameterValue=$INS_TYPE \
         ParameterKey=ImageId,ParameterValue=$IMG_ID \
         ParameterKey=KeyName,ParameterValue=$KEY_NAME \
         ParameterKey=SSHLocation,ParameterValue=$MY_PUB_CIDR \
-        ParameterKey=BucketName,ParameterValue=$BucketName
-        echo 'Updating stack... this may take a few minutes'
+        ParameterKey=BucketName,ParameterValue=$BUCKET_NAME \
+        --output text)
+
+        if [ -z $STACK_ID ]
+            then
+                echo 'Error in stack update, please verify your entries'
+            else
+                echo 'Updating stack... this may take a few minutes'
+        fi
+
 fi
 
-if [ $CHOICE = "delete" ]
+if [ $CHOICE = "3" ]
     then
-        echo 'Enter a stack name'
+        echo 'Enter a stack name (no spaces - ex: CamilleTp2Stack)'
         read STACK_NAME
-        aws cloudformation delete-stack \
-        --stack-name $STACK_NAME
-        echo 'Deleting stack...'
+
+        STACK_NAME_QUERY=$(aws cloudformation describe-stacks \
+        --stack-name $STACK_NAME \
+        --query Stacks[*].{StackName:StackName} \
+        --output text)
+
+        if [ -z $STACK_NAME_QUERY ]
+            then
+                echo 'Stack does not exists, please verify your entry'
+            else
+                aws cloudformation delete-stack \
+                --stack-name $STACK_NAME
+                echo 'Deleting stack... this may take a few minutes'
+        fi
 fi

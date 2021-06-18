@@ -175,7 +175,7 @@ Parameters:
     Type: String
     MinLength: '3'
     MaxLength: '63'
-#    AllowedPattern: 
+#    AllowedPattern: # to be defined
     ConstraintDescription: between 3 and 63 characters long / lowercase letters, numbers, dots (.), and hyphens (-) only / begin and end with a letter or number / not an IP address / unique ID in a partition.
 
 # output important values for easy viewing in cloudformation dashboard
