@@ -25,7 +25,23 @@ Resources:
           DeviceIndex: '0'
           DeleteOnTermination: 'true'
           SubnetId: !Ref PublicSubnet
-      # UserData: !Base64
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash -xe
+          yum update -y
+          amazon-linux-extras enable php7.4
+          yum install -y httpd
+          yum install -y mariadb-server
+          yum install -y php-cli php-pdo php-fpm php-json php-mysqlnd
+          sudo service mariadb start
+          sudo service httpd start
+          mysqladmin -u root create blog
+
+          cd /var/www/html
+          sudo wget http://wordpress.org/latest.tar.gz
+          sudo tar -xzvf latest.tar.gz
+          sudo mv wordpress/* .
+          sudo rm -rf wordpress
     DependsOn:
       - PublicRoute
   InternetGW:
@@ -160,13 +176,23 @@ Parameters:
     MinLength: '3'
     MaxLength: '63'
 #    AllowedPattern: 
-    ConstraintDescription: between 3 and 63 characters long / lowercase letters, numbers, dots (.), and hyphens (-) only / begin and end with a letter or number / not an IP address / unique ID in a partition
-# Outputs:
-#   URL:
-#     Value: !Join 
-#       - ''
-#       - - 'http://'
-#         - !GetAtt 
-#           - WebServerInstance
-#           - PublicIp
-#     Description: Newly created application URL
+    ConstraintDescription: between 3 and 63 characters long / lowercase letters, numbers, dots (.), and hyphens (-) only / begin and end with a letter or number / not an IP address / unique ID in a partition.
+
+# output important values for easy viewing in cloudformation dashboard
+
+Outputs:
+  InstanceId:
+    Description: InstanceId of the first EC2 instance
+    Value: !Ref EC2Instance
+
+  PublicDNS:
+    Description: Public DNS Name of the EC2 instance
+    Value: !GetAtt 
+      - EC2Instance
+      - PublicDnsName
+
+  PublicIP:
+    Description: Public IP address of the EC2 instance
+    Value: !GetAtt 
+      - EC2Instance
+      - PublicIp
