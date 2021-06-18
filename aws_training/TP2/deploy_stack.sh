@@ -56,8 +56,9 @@ sleep 1
 chmod 400 $PATH_KEY
 
 echo 'SSH created & ready to be used'
+echo ''
 
-echo -e "Enter \"create\" to create a new stack\nEnter \"update\" to update an existing stack\nEnter \"delete\" to delete an existing stack"
+printf "Enter \"create\" to create a new stack\nEnter \"update\" to update an existing stack\nEnter \"delete\" to delete an existing stack\n"
 
 read CHOICE
 
