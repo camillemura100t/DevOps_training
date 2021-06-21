@@ -1,0 +1,14 @@
+{
+    "Name": "Support Request Contributor (Custom)",
+    "IsCustom": true,
+    "Description": "Allows to create support requests",
+    "Actions": [
+        "Microsoft.Resources/subscriptions/resourceGroups/read",
+        "Microsoft.Support/*"
+    ],
+    "NotActions": [
+    ],
+    "AssignableScopes": [
+        "/subscriptions/873000fa-a741-48e5-8ae7-41c7937c47c3"
+    ]
+ }
