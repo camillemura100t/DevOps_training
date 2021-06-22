@@ -1,0 +1,21 @@
+$location = 'germanywestcentral'
+
+$rgName = 'az104-07-rg0-cmura'
+
+New-AzResourceGroup -Name $rgName -Location $location
+
+ResourceGroupName : az104-07-rg0-cmura
+Location          : germanywestcentral
+ProvisioningState : Succeeded
+Tags              :
+ResourceId        : /subscriptions/873000fa-a741-48e5-8ae7-41c7937c47c3/resourceGroups/az104-07-rg0-cmura
+
+New-AzResourceGroupDeployment `
+   -ResourceGroupName $rgName `
+   -TemplateFile $HOME/az104-07-vm-template.json `
+   -TemplateParameterFile $HOME/az104-07-vm-parameters.json `
+   -AsJob
+
+Id     Name            PSJobTypeName   State         HasMoreData     Location             Command
+--     ----            -------------   -----         -----------     --------             -------
+2      Long Running O… AzureLongRunni… Running       True            localhost            New-AzResourceGroupDeplo…

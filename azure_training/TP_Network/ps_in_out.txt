@@ -1,0 +1,26 @@
+PS /home/camille> $rgName = 'az104-04-rg1-cmura'
+PS /home/camille>
+PS /home/camille> New-AzResourceGroupDeployment `
+>>    -ResourceGroupName $rgName `
+>>    -TemplateFile $HOME/az104-04-vms-loop-template.json `
+>>    -TemplateParameterFile $HOME/az104-04-vms-loop-parameters.json
+
+DeploymentName          : az104-04-vms-loop-template
+ResourceGroupName       : az104-04-rg1-cmura
+ProvisioningState       : Canceled
+Timestamp               : 6/22/2021 9:14:14 AM
+Mode                    : Incremental
+TemplateLink            :
+Parameters              :
+                          Name                  Type                       Value
+                          ====================  =========================  ==========
+                          vmSize                String                     Standard_D2s_v3
+                          vmName                String                     az104-04-vm
+                          vmCount               Int                        2
+                          adminUsername         String                     Student
+                          adminPassword         SecureString
+                          virtualNetworkName    String                     az104-04-vnet1
+
+Outputs                 :
+DeploymentDebugLogLevel :
+

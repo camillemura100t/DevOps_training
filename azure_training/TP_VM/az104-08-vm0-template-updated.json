@@ -1,0 +1,102 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_az104_08_cma1_name": {
+            "defaultValue": "az104-08-cma1",
+            "type": "String"
+        },
+        "disks_az104_08_cma1_OsDisk_1_7aaf07044c5342adb9fbe07c7856549d_externalid": {
+            "defaultValue": "/subscriptions/873000fa-a741-48e5-8ae7-41c7937c47c3/resourceGroups/az104-08-rg01-cmura/providers/Microsoft.Compute/disks/az104-08-cma1_OsDisk_1_7aaf07044c5342adb9fbe07c7856549d",
+            "type": "String"
+        },
+        "networkInterfaces_az104_08_vm1_nic1_cmura_externalid": {
+            "defaultValue": "/subscriptions/873000fa-a741-48e5-8ae7-41c7937c47c3/resourceGroups/az104-08-rg01-cmura/providers/Microsoft.Network/networkInterfaces/az104-08-vm1-nic1-cmura",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+	    {
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"name": "az104-08-cma1/customScriptExtension",
+			"apiVersion": "2018-06-01",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"az104-08-cma1"
+			],
+			"properties": {
+				"publisher": "Microsoft.Compute",
+				"type": "CustomScriptExtension",
+				"typeHandlerVersion": "1.7",
+				"autoUpgradeMinorVersion": true,
+				"settings": {
+					"commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
+				}
+			}
+		},
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2021-03-01",
+            "name": "[parameters('virtualMachines_az104_08_cma1_name')]",
+            "location": "germanywestcentral",
+            "zones": [
+                "2"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_D2s_v3"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2019-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_az104_08_cma1_name'), '_OsDisk_1_7aaf07044c5342adb9fbe07c7856549d')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS",
+                            "id": "[parameters('disks_az104_08_cma1_OsDisk_1_7aaf07044c5342adb9fbe07c7856549d_externalid')]"
+                        },
+                        "diskSizeGB": 127
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_az104_08_cma1_name')]",
+                    "adminUsername": "Student",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": false,
+                        "patchSettings": {
+                            "patchMode": "Manual",
+                            "assessmentMode": "ImageDefault",
+                            "enableHotpatching": false
+                        }
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[parameters('networkInterfaces_az104_08_vm1_nic1_cmura_externalid')]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "https://az10408rg01cmuradiag2.blob.core.windows.net/"
+                    }
+                }
+            }
+        }
+    ]
+}

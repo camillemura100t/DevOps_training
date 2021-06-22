@@ -1,0 +1,3 @@
+Register-AzResourceProvider -ProviderNamespace Microsoft.Insights
+
+Register-AzResourceProvider -ProviderNamespace Microsoft.AlertsManagement
