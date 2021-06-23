@@ -1,3 +1,5 @@
+©Vanessa Kovalsky - https://github.com/vanessakovalsky
+
 # TP - 0 - Sauvegarde de fichier dans un bucket S3
 
 L'objectif de ce TP est de produire un script qui transfert des fichiers de sauvegardes vers un bucket S3
