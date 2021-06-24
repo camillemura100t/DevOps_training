@@ -11,18 +11,17 @@ AZ_KEY_NAME=AzTp2KeyPair
 PRIVATE_KEY_PATH=~/.ssh/AzTp2KeyPair
 PUBLIC_KEY_PATH=~/.ssh/AzTp2KeyPair.pub
 RG_NAME=cma-tp2-rg
-TPL_NAME=cmatp2tpl_AddTags
+TPL_NAME=cmatp2tpl
 TPL_FILE=./arm-tpl.json
 PARAM_FILE=./arm-parameters.json
 VM1_NAME=cma-tp2-vm1
-IMG_NAME=UbuntuLTS
-VM_USER_ADM=azureuser
+ADM_USR_NAME=admintp2
 LOCATION=germanywestcentral
 LOCATION2=germanynorth
 SA_NAME=cmatp2storageaccount
 SA_SKU=Standard_LRS     # default = Standard_LRS
 SA_PREFIX=cmatp2
-APP_SERVICE_PLAN_NAME=cma-tp2-planapp
+#APP_SERVICE_PLAN_NAME=cma-tp2-planapp
 
 # # create ressource group
 
@@ -44,10 +43,10 @@ az deployment group create \
 --resource-group $RG_NAME \
 --template-file $TPL_FILE \
 --parameters @$PARAM_FILE \
+--verbose
 # to do :
 # depuis https://github.com/Azure/azure-quickstart-templates/blob/master/quickstarts/microsoft.compute/vm-new-or-existing-conditions/azuredeploy.json
 # passer en paramètres "storageProfile" dans les "properties" de la ressource VM
 # insérer "diagnosticsProfile" dans les "properties" de la ressource VM
 # trouver la commande pour insérer la clé ssh publique dans le fichier arm-parameters.json au bon endroit (AdmPwdOrKey ... value :"key")
---verbose
 

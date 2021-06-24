@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VMName": {
+            "value": "cma-tp2-vm1"
+        },
+        "VMSize": {
+            "value": "Standard_A1_v2"
+        },
+        "HostName": {
+            "value": "cmatp2vm1"
+        },
+        "AdmUserName": {
+            "value": "admintp2"
+        },
+        "AdmPwdOrKey": {
+            "value": ""
+        },
+        "SAPrefix": {
+            "value": "cmatp2"
+        },
+        "SASKU": {
+            "value": "Standard_LRS"
+        },
+        "ResTags": {
+            "value": {
+                "Environment": "Dev",
+                "Project": "Tutorial"
+            }
+        },
+        "CustomData": {
+            "value": "#cloud-config\npackage_upgrade: true\npackages:\n  - python3 \n  - python3-dev\n  - python3-pip\n  - nginx\n  - git\n\nruncmd:\n  # clone GitHub Repo into myapp directory\n  - git clone https://github.com/Azure-Samples/azure-stack-hub-flask-hello-world.git\n  - cd azure-stack-hub-flask-hello-world\n  # Install app\n  - python3 - pip3 install -r requirements.txt\n  - export FLASK_APP=application.py\n  - flask run -h 0.0.0.0"
+        }
+    }
+}

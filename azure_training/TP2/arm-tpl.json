@@ -22,9 +22,9 @@
         },
         "AdmUserName": {
             "type": "string",
-            "defaultValue": "admin",
+            "defaultValue": "admintp2",
             "allowedValues": [
-                "admin",
+                "admintp2",
                 "azureadmin"
             ]
         },
