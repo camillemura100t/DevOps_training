@@ -1,0 +1,343 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VMName": {
+            "type": "string",
+            "defaultValue": "cma-tp2-vm1"
+        },
+        "VMSize": {
+            "type": "string",
+            "defaultValue": "Standard_A1_v2",
+            "allowedValues": [
+                "Standard_A1_v2",
+                "Standard_A2_v2",
+                "Standard_DS1_v2",
+                "Standard_DS2_v2"
+            ]
+        },
+        "HostName": {
+            "type": "string",
+            "defaultValue": "cmatp2vm1"
+        },
+        "AdmUserName": {
+            "type": "string",
+            "defaultValue": "admin",
+            "allowedValues": [
+                "admin",
+                "azureadmin"
+            ]
+        },
+        "authenticationType": {
+            "type": "string",
+            "defaultValue": "sshPublicKey",
+            "allowedValues": [
+              "password",
+              "sshPublicKey"
+            ],
+            "metadata": {
+              "description": "Type of authentication to use on the Virtual Machine."
+            }
+        },
+        "AdmPwdOrKey": {
+            "type": "securestring",
+            "metadata": {
+              "description": "Password or ssh key for the Virtual Machine."
+            }
+        },
+        "CustomData": {
+            "type": "string",
+            "defaultValue": "echo CustomData",
+            "metadata": {
+              "description": "String passed down to the VM."
+            }
+        },
+        "SAPrefix": {
+            "type": "string",
+            "defaultValue": "cmatp2",
+            "minLength": 3,
+            "maxLength": 11
+        },
+        "SASKU": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+              "Standard_LRS",
+              "Standard_GRS",
+              "Standard_RAGRS",
+              "Standard_ZRS",
+              "Premium_LRS",
+              "Premium_ZRS",
+              "Standard_GZRS",
+              "Standard_RAGZRS"
+            ]
+        },
+        "LOC": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "virtualNetworkNewOrExisting": {
+            "type": "string",
+            "defaultValue": "new",
+            "metadata": {
+              "description": "Determines whether or not a new virtual network should be provisioned."
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "defaultValue": "VirtualNetwork",
+            "metadata": {
+              "description": "Name of the virtual network"
+            }
+        },
+          "addressPrefixes": {
+            "type": "array",
+            "defaultValue": [
+              "10.0.0.0/16"
+            ],
+            "metadata": {
+              "description": "Address prefix of the virtual network"
+            }
+        },
+          "subnetName": {
+            "type": "string",
+            "defaultValue": "default",
+            "metadata": {
+              "description": "Name of the subnet"
+            }
+        },
+          "subnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/24",
+            "metadata": {
+              "description": "Subnet prefix of the virtual network"
+            }
+        },
+        "virtualNetworkResourceGroupName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+              "description": "Name of the resource group for the existing virtual network"
+            }
+        },
+          "publicIpNewOrExisting": {
+            "type": "string",
+            "defaultValue": "new",
+            "metadata": {
+              "description": "Determines whether or not a new public ip should be provisioned."
+            }
+        },
+          "publicIpName": {
+            "type": "string",
+            "defaultValue": "PublicIp",
+            "metadata": {
+              "description": "Name of the public ip address"
+            }
+        },
+          "publicIpDns": {
+            "type": "string",
+            "defaultValue": "[concat('linux-vm-', uniqueString(resourceGroup().id))]",
+            "metadata": {
+              "description": "DNS of the public ip address for the VM"
+            }
+        },
+          "publicIpResourceGroupName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+              "description": "Name of the resource group for the public ip address"
+            }
+        },
+        "ResTags": {
+            "type": "object",
+            "defaultValue": {
+                "Environment": "Dev",
+                "Project": "Tutorial"
+            }
+        }
+    },
+    "variables": {
+        "SAUID": "[concat(parameters('SAPrefix'), uniqueString(resourceGroup().id))]",
+        "nicName": "[concat(parameters('VMName'), '-nic')]",
+        "publicIpAddressId": {
+            "id": "[resourceId(parameters('publicIpResourceGroupName'), 'Microsoft.Network/publicIPAddresses', parameters('publicIpName'))]"
+        },
+        "networkSecurityGroupName": "cma-NSG",
+        "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+              "publicKeys": [
+                {
+                    "path": "[concat('/home/', parameters('AdmUserName'), '/.ssh/authorized_keys')]",
+                    "keyData": "[parameters('AdmPwdOrKey')]"
+                }
+              ]
+            }
+        }
+    },
+    "resources": [
+        {
+            "condition": "[equals(parameters('publicIpNewOrExisting'), 'new')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2017-09-01",
+            "name": "[parameters('publicIpName')]",
+            "location": "[parameters('LOC')]",
+            "properties": {
+              "publicIPAllocationMethod": "Dynamic",
+              "dnsSettings": {
+                "domainNameLabel": "[parameters('publicIpDns')]"
+              }
+            }
+        },
+        {
+            "condition": "[equals(parameters('virtualNetworkNewOrExisting'), 'new')]",
+            "comments": "Default Network Security Group for template",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-08-01",
+            "name": "[variables('networkSecurityGroupName')]",
+            "location": "[parameters('LOC')]",
+            "properties": {
+              "securityRules": [
+                {
+                    "name": "default-allow-22",
+                    "properties": {
+                        "priority": 1000,
+                        "access": "Allow",
+                        "direction": "Inbound",
+                        "destinationPortRange": "22",
+                        "protocol": "Tcp",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*",
+                        "destinationAddressPrefix": "*"
+                    }
+                },
+                {
+                    "name": "flask-5000",
+                    "properties": {
+                      "priority": 1001,
+                      "access": "Allow",
+                      "direction": "Inbound",
+                      "destinationPortRange": "5000",
+                      "protocol": "Tcp",
+                      "sourceAddressPrefix": "*",
+                      "sourcePortRange": "*",
+                      "destinationAddressPrefix": "*"
+                    }
+                }
+              ]
+            }
+        },
+        {
+            "condition": "[equals(parameters('virtualNetworkNewOrExisting'), 'new')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2017-09-01",
+            "name": "[parameters('virtualNetworkName')]",
+            "location": "[parameters('LOC')]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+            ],
+            "properties": {
+              "addressSpace": {
+                "addressPrefixes": "[parameters('addressPrefixes')]"
+              },
+              "subnets": [
+                {
+                  "name": "[parameters('subnetName')]",
+                  "properties": {
+                    "addressPrefix": "[parameters('subnetPrefix')]",
+                    "networkSecurityGroup": {
+                      "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                    }
+                  }
+                }
+              ]
+            }
+        },
+        {
+            "apiVersion": "2017-09-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "location": "[parameters('LOC')]",
+            "dependsOn": [
+              "[parameters('publicIpName')]",
+              "[parameters('virtualNetworkName')]"
+            ],
+            "properties": {
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('subnetName'))]"
+                    },
+                    "publicIPAddress": "[if(not(equals(parameters('publicIpNewOrExisting'), 'none')), variables('publicIpAddressId') , json('null'))]"
+                  }
+                }
+              ]
+            }
+        },
+        {
+            "name": "[parameters('VMName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2020-12-01",
+            "location": "[parameters('LOC')]",
+            "dependsOn": [
+                "[variables('SAUID')]",
+                "[variables('nicName')]"
+            ],
+            "tags": {},
+            "properties": {
+              "hardwareProfile": {
+                "vmSize": "[parameters('VMSize')]"
+              },
+              "storageProfile": {
+                "imageReference": {
+                  "publisher": "Canonical",
+                  "offer": "UbuntuServer",
+                  "sku": "16.04-LTS",
+                  "version": "latest"
+                },
+                "osDisk": {
+                  "caching": "ReadWrite",
+                  "createOption": "FromImage"
+                }
+              },
+              "networkProfile": {
+                "networkInterfaces": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+                  }
+                ]
+              },
+              "osProfile": {
+                "computerName": "[parameters('HostName')]",
+                "adminUsername": "[parameters('AdmUserName')]",
+                "adminPassword": "[parameters('AdmPwdOrKey')]",
+                "customData": "[base64(parameters('CustomData'))]",
+                "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+              }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-04-01",
+            "name": "[variables('SAUID')]",
+            "location": "[parameters('LOC')]",
+            "tags": "[parameters('ResTags')]",
+            "sku": {
+            "name": "[parameters('SASKU')]"
+            },
+            "kind": "StorageV2",
+            "properties": {
+            "supportsHttpsTrafficOnly": true
+            }
+        }
+    ],
+    "outputs": {
+        "storageEndpoint": {
+          "type": "object",
+          "value": "[reference(variables('SAUID')).primaryEndpoints]"
+        }
+    }
+  }

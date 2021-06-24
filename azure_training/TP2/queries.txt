@@ -1,0 +1,6 @@
+Lister les régions disponibles :
+
+az account list-locations \
+  --query "[].{Region:name}" \
+  --out table
+
