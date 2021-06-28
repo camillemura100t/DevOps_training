@@ -1,7 +1,7 @@
 $connectTestResult = Test-NetConnection -ComputerName cmurastorage.file.core.windows.net -Port 445
 if ($connectTestResult.TcpTestSucceeded) {
     # Save the password so the drive will persist on reboot
-    cmd.exe /C "cmdkey /add:`"cmurastorage.file.core.windows.net`" /user:`"localhost\cmurastorage`" /pass:`"w+yR+HP5eo1GUKnUeepOLW+3zPAWjMNsNZ2isWSxCxHpg4aNPDjZfI34zdOufo1lNRA4olTxRs36vdWwmbtjiA==`""
+    cmd.exe /C "cmdkey /add:`"cmurastorage.file.core.windows.net`" /user:`"localhost\cmurastorage`" /pass:`"***pass_removed***`""
     # Mount the drive
     New-PSDrive -Name Z -PSProvider FileSystem -Root "\\cmurastorage.file.core.windows.net\az104-07-share-cmura" -Persist
 } else {
